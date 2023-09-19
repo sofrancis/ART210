@@ -41,4 +41,5 @@ function drawFlower(flower){
   } else {
     image(tulipImg, 0, 0, flower.size, flower.size);
  }
+pop();
 }
