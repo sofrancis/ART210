@@ -1,3 +1,4 @@
+//define variables
 let songBackground = [];
 let songText = [];
 let songFont = [];
@@ -8,6 +9,7 @@ let backwards;
 let forwards;
 let play;
 
+//load arrays and images
 function preload() {
   song[0] = loadImage('data/twopointfive.png');
   song[1] = loadImage('data/istj.png');
@@ -34,6 +36,7 @@ function preload() {
   songFont[4] = ('Arizonia');
 
   play = loadImage('data/playp.png');
+  //resize all buttons to desired position and size
   play.resize(25, 125);
 
   forwards = loadImage('data/forwardsf.png');
@@ -49,25 +52,29 @@ function setup() {
 }
 
 function draw() {
+  //set color of background to match album cover
   background(songBackground[currentSong]);
-
+  //align and position all text
   textSize(36);
   textAlign(CENTER);
   fill(0);
+  //change text and fonts to match album covers
   text(songText[currentSong], width / 2, 800);
   textFont(songFont[currentSong]);
 
-  
+  //buttons
   image(play, 365, 845);
   image(backwards, 170, 860);
   image(forwards, 520, 860);
-
+  
+  //make album covers rotate
   translate(400, 400);
   rotate(angle);
   image(song[currentSong], -325, -325, 650, 650);
   angle += 0.02;
 }
 
+//function changes album covers when skip buttons are pushed
 function mousePressed() {
   if (
     mouseX >= 520 &&
