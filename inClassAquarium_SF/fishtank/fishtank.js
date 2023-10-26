@@ -1,9 +1,13 @@
 //- Set night sky as background (CHECK)
-//- Get stars to bounce from side to side off-screen (switch to looping, LETS GOOOOO)
+//- Get stars to bounce from side to side off-screen (switched to looping) (LETS GOOOOO)
 //- Make each star a button that when clicked on, displays stars in the night sky 
 //temporarily (THIS SHOULD BE WORKING)
 //    - Constellations will be pushed n popped afterwards or use if/then (SLAY)
-//    - Have them as similar pngs with names (add names, drawing lines + dots instead)
+//    - Have them as similar pngs with names (add names, drawing lines + dots instead,
+//also include text for names nearby that disappears as well)
+
+// could also randomize which constellation is created but rn they're not showing up
+//dicks
 
 
 let stars = [];
