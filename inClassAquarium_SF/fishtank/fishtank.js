@@ -1,110 +1,111 @@
-//- Set night sky as background (CHECK)
-//- Get stars to bounce from side to side off-screen (switched to looping) (LETS GOOOOO)
-//- Make each star a button that when clicked on, displays stars in the night sky 
-//temporarily (THIS SHOULD BE WORKING)
-//    - Constellations will be pushed n popped afterwards or use if/then (SLAY)
-//    - Have them as similar pngs with names (add names, drawing lines + dots instead,
-//also include text for names nearby that disappears as well)
-
-// could also randomize which constellation is created but rn they're not showing up
-//dicks
-
+//comments: 
+// - fix left size of screen
+// - move trees to background (combine in photoshop)
+//   - change background is what i'm feeling
+// - change sizes of stars
+// - add bounce to stars across screen
+// - randomize sizes of stars?
 
 let stars = [];
-let starsDrawingLines = [];
+let constellationDrawingLines = [];
 
-let lineDuration = 4 * 60;
-let x = 20;
-let y = 50;
-let xSpeed = 1.3;
-let radius = 25; 
-
-let backie; 
-let treeline;
-//define all variables + array for stars
+let lineDuration = 24 * 60;
+let backie;
+let pinkstar, redstar, orangestar, greenstar, bluestar, purplestar;
+let capricorn, gemini, virgo, taurus, leo, libra;
 
 function preload() {
-  backie = loadImage('data/nightsky.png');
+  backie = loadImage('data/nightskytotal.png');
   treeline = loadImage('data/treeline.png');
+  pinkstar = loadImage('data/pinkstar.png');
+  redstar = loadImage('data/redstar.png');
+  orangestar = loadImage('data/orangestar.png');
+  greenstar = loadImage('data/greenstar.png');
+  bluestar = loadImage('data/bluestar.png');
+  purplestar = loadImage('data/purplestar.png');
   
-  pistar = loadImage('data/pinkstar.png');
-  rstar = loadImage('data/redstar.png');
-  ostar = loadImage('data/orangestar.png');
-  gstar = loadImage('data/greenstar.png');
-  bstar = loadImage('data/bluestar.png');
-  pstar = loadImage('data/purplestar.png');
-//preload all images
-  
+  capricorn = loadImage('data/capricorn.png');
+  gemini = loadImage('data/gemini.png');
+  virgo = loadImage('data/virgo.png');
+  taurus = loadImage('data/taurus.png');
+  leo = loadImage('data/leo.png');
+  libra = loadImage('data/libra.png');
 }
 
 function setup() {
-//creates canvas that is the same width and height as night sky image
   createCanvas(1109, 736);
 
-//resize treeline so it's in the picture
-  treeline.resize(500, 700);
-  
-//if value is negative, goes from right to left
-  stars.push({ image: pstar,  x: 0, y: 50, xSpeed: 2.3});
-  stars.push({ image: gstar,  x: width-201, y: 150, xSpeed: -2.85});
-  stars.push({ image: pistar,  x: 100, y: 300, xSpeed: 1.2});
-  stars.push({ image: bstar,  x: width-500, y: 350, xSpeed: -4});
-  stars.push({ image: rstar,  x: width-350, y: 450, xSpeed: -1.41});
-  stars.push({ image: ostar,  x: 250, y: 600, xSpeed: 6.1});
+  stars.push({ image: purplestar,  x: 0, y: 25, xSpeed: 2.3});
+  stars.push({ image: greenstar,  x: width-201, y: 100, xSpeed: -2.85});
+  stars.push({ image: pinkstar,  x: 100, y: 175, xSpeed: 1.2});
+  stars.push({ image: bluestar,  x: width-500, y: 250, xSpeed: -4});
+  stars.push({ image: redstar,  x: width-350, y: 325, xSpeed: -1.41});
+  stars.push({ image: orangestar,  x: 250, y: 400, xSpeed: 6.1});
 }
 
 function draw() {
   background(backie);
-//constantly rewrite background to prevent conveyor line
 
-  image(treeline, 500, 730);
-//can't see?
-
+//resizes and displays stars from array
   for (let star of stars) {
-    image(star.image, star.x, star.y, 50, 50);
+    image(star.image, star.x, star.y, 100, 100);
     star.x += star.xSpeed;
-//make stars float across sky
 
-  if (star.x - radius > width) {
-    star.x = -radius;
-  } else if (star.x + radius < 0) {
-    star.x = width + radius;
-//keep flying across screen
+    if (star.x - 25 > width) {
+      star.x = -25;
+    } else if (star.x + 25 < 0) {
+      star.x = width + 25;
+    }
 
-    if (starsDrawingLines.includes(star)) {
-      drawLinesForStar(star);
-//is star "drawing"?
-   }
+//if you clicked on a star, draw constellation
+    if (constellationDrawingLines.includes(star)) {
+      drawLinesForConstellation(star);
+    }
   }
- }
+//shows treeline
+  image(treeline, 0, 1100-height);
 }
 
 function mousePressed() {
   for (let star of stars) {
-    let d = dist(mouseX, mouseY, star.x + 25, star.y + 25); 
-    if (d < 25) {
-      starsDrawingLines.push(star);
-//star's been clicked, draw lines
+    //check if the mouse click is inside the star image
+    if (
+      mouseX >= star.x &&
+      mouseX <= star.x + 50 &&
+      mouseY >= star.y &&
+      mouseY <= star.y + 50
+    ) {
+//checks/removes star from drawing line array
+      if (constellationDrawingLines.includes(star)) {
+        const index = constellationDrawingLines.indexOf(star);
+        constellationDrawingLines.splice(index, 1);
+      } else {
+        constellationDrawingLines.push(star);
+      }
 
-     setTimeout(() => {
-       const index = starsDrawingLines.indexOf(star);
-       if (index !== -1) {
-         starsDrawingLines.splice(index, 1);
-//makes star disappear  from lines after 4 seconds (thank you chat)
+      setTimeout(() => {
+        const index = constellationDrawingLines.indexOf(star);
+        if (index !== -1) {
+          constellationDrawingLines.splice(index, 1);
         }
       }, lineDuration);
-      break; 
-// exit the loop if a star is clicked
     }
   }
 }
 
-function drawLinesForStar(star) {
-  if (star.image === pstar) {
-    line(100, 100, 300, 300);
-    stroke(0, 0, 255);
-  } else if (star.image === gstar) {
-    line(200, 200, 400, 400); 
-  } 
+//displays images depending on what star is clicked on (randomize?)
+function drawLinesForConstellation(star) {
+  if (star.image === purplestar) {
+    image(capricorn, 200, 0);
+  } else if (star.image === greenstar) {
+    image(gemini, 200, 0);
+  } else if (star.image === pinkstar) {
+    image(leo, 200, 0);
+  } else if (star.image === bluestar) {
+    image(libra, 200, 0);
+  } else if (star.image === redstar) {
+    image(taurus, 200, 0);
+  } else if (star.image === orangestar) {
+    image(virgo, 200, 0);
+  }
 }
-//you right here are not working you whore, the all-knowing machine even approved it wtf
