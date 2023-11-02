@@ -1,22 +1,19 @@
 //comments: 
-// - fix left size of screen
-// - move trees to background (combine in photoshop)
 //   - change background is what i'm feeling
-// - change sizes of stars
-// - add bounce to stars across screen
 // - randomize sizes of stars?
 
 let stars = [];
 let constellationDrawingLines = [];
 
 let lineDuration = 24 * 60;
+
 let backie;
+let starz;
 let pinkstar, redstar, orangestar, greenstar, bluestar, purplestar;
 let capricorn, gemini, virgo, taurus, leo, libra;
 
 function preload() {
   backie = loadImage('data/nightskytotal.png');
-  treeline = loadImage('data/treeline.png');
   pinkstar = loadImage('data/pinkstar.png');
   redstar = loadImage('data/redstar.png');
   orangestar = loadImage('data/orangestar.png');
@@ -30,31 +27,50 @@ function preload() {
   taurus = loadImage('data/taurus.png');
   leo = loadImage('data/leo.png');
   libra = loadImage('data/libra.png');
+  
+  starz = loadImage('data/starzys.png');
 }
 
 function setup() {
-  createCanvas(1109, 736);
+  createCanvas(backie.width, backie.height);
 
-  stars.push({ image: purplestar,  x: 0, y: 25, xSpeed: 2.3});
-  stars.push({ image: greenstar,  x: width-201, y: 100, xSpeed: -2.85});
-  stars.push({ image: pinkstar,  x: 100, y: 175, xSpeed: 1.2});
-  stars.push({ image: bluestar,  x: width-500, y: 250, xSpeed: -4});
-  stars.push({ image: redstar,  x: width-350, y: 325, xSpeed: -1.41});
-  stars.push({ image: orangestar,  x: 250, y: 400, xSpeed: 6.1});
+  stars.push({ image: purplestar, x: 0, y: 25, xSpeed: 2.3, ySpeed: 1.2 });
+  stars.push({ image: greenstar, x: width - 201, y: 100, xSpeed: -2.85, ySpeed: -0.5 });
+  stars.push({ image: pinkstar, x: 100, y: 175, xSpeed: 1.2, ySpeed: -1.2 });
+  stars.push({ image: bluestar, x: width - 500, y: 250, xSpeed: -4, ySpeed: 2 });
+  stars.push({ image: redstar, x: width - 350, y: 325, xSpeed: -1.41, ySpeed: 0.75 });
+  stars.push({ image: orangestar, x: 250, y: 400, xSpeed: 6.1, ySpeed: -1.5 });
+
 }
 
 function draw() {
-  background(backie);
-
+  background(0, 0, 102);
+  
+  image(starz, 0, 0);
+  
+//draws moon
+  noStroke();
+  fill(255,255,255,10);
+  //transparency, draw ellipse
+  for(i = 0; i < 100; i++){
+    ellipse(550,350, i*3);
+}
+  
 //resizes and displays stars from array
   for (let star of stars) {
-    image(star.image, star.x, star.y, 100, 100);
+    image(star.image, star.x, star.y, 145, 145);
+    
     star.x += star.xSpeed;
+    star.y += star.ySpeed;
 
-    if (star.x - 25 > width) {
-      star.x = -25;
-    } else if (star.x + 25 < 0) {
-      star.x = width + 25;
+//wall check left and right 
+    if (star.x - 5 > width - 140 || star.x + 5 < 0) {
+      star.xSpeed *= -1;
+    }
+
+//wall check up and down 
+    if (star.y - 5 > height - 140 || star.y + 5 < 0) {
+      star.ySpeed *= -1;
     }
 
 //if you clicked on a star, draw constellation
@@ -62,8 +78,6 @@ function draw() {
       drawLinesForConstellation(star);
     }
   }
-//shows treeline
-  image(treeline, 0, 1100-height);
 }
 
 function mousePressed() {
@@ -71,9 +85,9 @@ function mousePressed() {
     //check if the mouse click is inside the star image
     if (
       mouseX >= star.x &&
-      mouseX <= star.x + 50 &&
+      mouseX <= star.x + 100 &&
       mouseY >= star.y &&
-      mouseY <= star.y + 50
+      mouseY <= star.y + 100
     ) {
 //checks/removes star from drawing line array
       if (constellationDrawingLines.includes(star)) {
@@ -83,6 +97,7 @@ function mousePressed() {
         constellationDrawingLines.push(star);
       }
 
+//shows image for certain amount of time
       setTimeout(() => {
         const index = constellationDrawingLines.indexOf(star);
         if (index !== -1) {
@@ -96,16 +111,16 @@ function mousePressed() {
 //displays images depending on what star is clicked on (randomize?)
 function drawLinesForConstellation(star) {
   if (star.image === purplestar) {
-    image(capricorn, 200, 0);
+    image(capricorn, 140, 140);
   } else if (star.image === greenstar) {
-    image(gemini, 200, 0);
+    image(gemini, 155, 100);
   } else if (star.image === pinkstar) {
-    image(leo, 200, 0);
+    image(leo, 160, 20);
   } else if (star.image === bluestar) {
-    image(libra, 200, 0);
+    image(libra, 200, 50);
   } else if (star.image === redstar) {
-    image(taurus, 200, 0);
+    image(taurus, 200, 50);
   } else if (star.image === orangestar) {
-    image(virgo, 200, 0);
+    image(virgo, 200, 190);
   }
 }
