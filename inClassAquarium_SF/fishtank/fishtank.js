@@ -1,7 +1,3 @@
-//comments: 
-//   - change background is what i'm feeling
-// - randomize sizes of stars?
-
 let stars = [];
 let constellationDrawingLines = [];
 
