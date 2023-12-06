@@ -30,6 +30,9 @@ let restartButton;
 //variable to hide progress bar once the game is over
 let gameOver = false;
 
+
+
+
 function preload(){
 //preload background image and fancy circles
   blessed = loadImage('data/blessedfr.png');
@@ -48,6 +51,9 @@ function preload(){
   randomInfidelIndex = floor(random(infidelImg.length)); //displays a random infidel image
 }
 
+
+
+
 function setup() {
   createCanvas(1200, 1024); //creates canvas
   
@@ -60,7 +66,9 @@ function setup() {
   blessButton.style('font-size', '40px'); //font size
   blessButton.style('color', '#DDA75E'); // tan
   blessButton.show(); //shows button
-  blessButton.mousePressed(blessInfidels); //bleses an infidel when pressed
+  blessButton.mousePressed(blessInfidels); //blesses an infidel when pressed
+  
+  
   
   rejectButton = createButton('Reject'); //creates button that reads "Reject"
   rejectButton.size(145, 80); //button size
@@ -72,6 +80,8 @@ function setup() {
   rejectButton.style('color', '#DDA75E'); //tan
   rejectButton.show(); //shows button
   rejectButton.mousePressed(rejectInfidels); //rejects an infidel when pressed
+  
+  
   
   restartButton = createButton('Continue\nPenance?'); //creates button that reads "Continue Penance?"
   restartButton.size(145, 80); //button size
@@ -88,6 +98,9 @@ function setup() {
   currentInfidel = allInfidels.pop();
 }
 
+
+
+
 function reset(){
   blessButton.show(); //displays bless button
   rejectButton.show(); //displays reject button
@@ -95,7 +108,7 @@ function reset(){
   
   score = 0; //resets score back to zero
   decisionsMade = 0; //resets decisions back to zero
-  gameOver = false;
+  gameOver = false; //displays progress bar again
   progressBarDiameter = 200; //resets progress bar to "zero"
   currentInfidel = allInfidels.pop(); //resets infidels
   
@@ -105,6 +118,9 @@ function reset(){
 function resetButtonPressed() {
   reset(); //executes the reset function above when the reset button is clicked on
 }
+
+
+
 
 function draw() {
   background(255); //sets the color of the background to black
@@ -123,7 +139,7 @@ function draw() {
   textSize(85); //text size
   text('Pr  tect th   In  oce  ts', 220, 135); //displayed text
 
-//lil mystery message
+  //lil mystery message
   textSize(86); //text size
   fill(225, 0, 0); //red
   text('o', 305.1, 135.4); //displayed letter
@@ -151,34 +167,33 @@ function draw() {
   textFont('Fondamento'); //sets font for all text
   
   checkGameStatus(); //check game status 
-  displayProgressBar(); //self-explanatory
+  displayProgressBar(); //I'd like to think it's self-explanatory
 }
+
+
+
 
 function displayProgressBar() {
   if (!gameOver) { //displays progress bar conditionally so that it disappears when the game is over
   let progress = map(score, -4, 4, 0, progressBarDiameter, progressBarDiameter); //sets the progress location and the max size of the bar
-  fill(0, 255, 0); //color of progress bar
+  fill(117, 124, 85); //color of progress bar
   ellipse(1000, 400, progress, progress); //location and size of the progress bar
  }
 }
 
-function keyPressed() {
-  if (decisionsMade < 10 && currentInfidel) {
-    let decision = key === 'F'; //sets 'F' as the action key
-    updateScore(decision, currentInfidel); //lose one decision
-    currentInfidel = allInfidels.pop(); //pop infidels once decision is taken
-    decisionsMade++;
-  }
-}
 
-//FIX THIS
-function updateScore(decision, character) {
+
+
+  function updateScore(decision, character) {
   let correctDecision = (goodie.includes(character) && decision) || (baddie.includes(character) && !decision);
   score += correctDecision ? 1 : -1;
   score = constrain(score, -4, 4); // Keep score within -4 to 4
 }
- 
-function checkGameStatus() {
+
+
+
+
+function checkGameStatus() { //WE HAVE A WINNER
   if (score >= 4) {
     image(winner, 0, 0); //displays "winning" image
     
@@ -205,7 +220,9 @@ function checkGameStatus() {
     
     noLoop(); //stops drawing function
     
-  } else if (score <= -4) {
+    
+    
+  } else if (score <= -4) { //YOU SUCK AND NO ONE LIKES YOU
     image(superloser, 0, 0); // displays "losing" image
     
     //sentencing for ending
@@ -231,7 +248,9 @@ function checkGameStatus() {
     
     noLoop(); //stops drawing function
     
-  } else if (decisionsMade >= 10) {
+    
+    
+  } else if (decisionsMade >= 10) { //YOU'RE INDECISIVE AND SO IS YOUR MOM
     image(loser, 0, 0); // displays "losing" image
     
     //sentencing for ending
@@ -259,6 +278,9 @@ function checkGameStatus() {
   }
 }
 
+
+
+
 //shuffles array of infidels
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -268,17 +290,29 @@ function shuffle(array) {
   return array;
 }
 
+
+
+
 function blessInfidels() {
+  updateScore(true, currentInfidel);
+  currentInfidel = allInfidels.pop();
+  decisionsMade++;
 }
 
+
+
+ 
 function rejectInfidels() {
+  updateScore(false, currentInfidel);
+  currentInfidel = allInfidels.pop();
+  decisionsMade++;
 }
+
+
+
 
 //shit to do:
-//CHECK  - get button for the end to restart the game (find code and put in if/else)
-//check  - make buttons disappear at the end of the game
-//CHECK - fix progress bar (display cirle, increase/decrease in size)
-//CHECK  - make one lose after their score reaches 0
+
 //  - fix bless/reject to do either action when button is clicked/when hand is raised in the future
-// - shuffle images of infidels for each individual infidel up for trial
-//game glitches when 8 choices are taken when the game is reset
+//  - shuffle images of infidels for each individual infidel up for trial
+//  - game glitches when 8 choices are taken when the game is reset like the bitch it is
