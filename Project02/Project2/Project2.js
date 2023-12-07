@@ -1,4 +1,4 @@
-//arrays for images shown, goodies, and baddies
+//arrays for images of infidels shown
 let infidelImg = [];
 //arrays for all the sins of individual infidels
 let goodie = ['- Decapitation\n- Infidelity', '- Filthy conversation\n- Fratercide', '- Not correcting children\n- Excessively lustful', '- Unnatural beauty\n- Cannibalism', '- Killed a parent \n- Returned an insult', '- Wrathful\n- Rudeness', '- Judges others unfairly\n- Youthful lust', '- Overindulging\n- Enslaved to their passions', '- Stubborness\n- Refusing to die for others', '- Seeking riches\n- Sorceries'];
@@ -30,6 +30,11 @@ let restartButton;
 //variable to hide progress bar once the game is over
 let gameOver = false;
 
+let video; //variable to capture webcam feed
+let targetColor; //array that represents the target color that is being tracked
+let blessBox; //object that represents the initial position/dimensions of a box that "blesses"
+let rejectBox; //object that represents the initial position/dimensions of a box that "blesses"
+
 
 
 
@@ -55,7 +60,17 @@ function preload(){
 
 
 function setup() {
-  createCanvas(1200, 1024); //creates canvas
+  createCanvas(1200, 1744); //creates canvas
+  video = createCapture(VIDEO); //creates video capture
+  video.size(1200, 720); //sets position and size of video so that it's right under the "game" 
+  
+  targetColor = [255, 175, 27];
+  
+  blessBox = {x: 10, y: 1290, w: 50, h: 50};
+  rejectBox = {x: 10, y: 1250, w: 50, h: 50};
+  
+  initializeInfidels();//sets up infidels
+  
   
   blessButton = createButton('Bless'); //creates button that reads "Bless"
   blessButton.size(150,80); //button size
@@ -69,7 +84,6 @@ function setup() {
   blessButton.mousePressed(blessInfidels); //blesses an infidel when pressed
   
   
-  
   rejectButton = createButton('Reject'); //creates button that reads "Reject"
   rejectButton.size(145, 80); //button size
   rejectButton.position(38, 765);
@@ -80,7 +94,6 @@ function setup() {
   rejectButton.style('color', '#DDA75E'); //tan
   rejectButton.show(); //shows button
   rejectButton.mousePressed(rejectInfidels); //rejects an infidel when pressed
-  
   
   
   restartButton = createButton('Continue\nPenance?'); //creates button that reads "Continue Penance?"
@@ -106,6 +119,7 @@ function reset(){
   rejectButton.show(); //displays reject button
   restartButton.hide(); //hides the reset button
   
+  initializeInfidels(); //sets up infidels again  
   score = 0; //resets score back to zero
   decisionsMade = 0; //resets decisions back to zero
   gameOver = false; //displays progress bar again
@@ -122,8 +136,18 @@ function resetButtonPressed() {
 
 
 
+
+function initializeInfidels() {
+  allInfidels = shuffle(goodie.concat(baddie)); //reshuffles baddies/goodies
+}
+
+
+
+
 function draw() {
   background(255); //sets the color of the background to black
+  image(video, 0, 1024); //displays video feed on the canvas
+  
   
   image(blessed, 0, 0); //displays the main shape cloaked in white
   image(infidelImg[randomInfidelIndex], 400, 475, 500, 550); //displays an image of an infidel
@@ -167,7 +191,7 @@ function draw() {
   textFont('Fondamento'); //sets font for all text
   
   checkGameStatus(); //check game status 
-  displayProgressBar(); //I'd like to think it's self-explanatory
+  displayProgressBar(); //I'd like to think it's self-explanatory  
 }
 
 
@@ -294,20 +318,27 @@ function shuffle(array) {
 
 
 function blessInfidels() {
-  updateScore(true, currentInfidel);
-  currentInfidel = allInfidels.pop();
-  decisionsMade++;
+  handleInfidelDecision(true);
 }
 
 
 
  
 function rejectInfidels() {
-  updateScore(false, currentInfidel);
+  handleInfidelDecision(false);
+}
+
+
+
+
+function handleInfidelDecision(decision) {
+  if (allInfidels.length === 0) {
+    initializeInfidels();
+  }
+  updateScore(decision, currentInfidel);
   currentInfidel = allInfidels.pop();
   decisionsMade++;
 }
-
 
 
 
