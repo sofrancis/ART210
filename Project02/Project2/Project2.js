@@ -35,7 +35,9 @@ let targetColor; //array that represents the target color that is being tracked
 let blessBox; //object that represents the initial position/dimensions of a box that "blesses"
 let rejectBox; //object that represents the initial position/dimensions of a box that "blesses"
 
-
+let smoothedX = 0;
+let smoothedY = 0;
+let easing = 0.05;
 
 
 function preload(){
@@ -62,38 +64,39 @@ function preload(){
 function setup() {
   createCanvas(1200, 1744); //creates canvas
   video = createCapture(VIDEO); //creates video capture
-  video.size(1200, 720); //sets position and size of video so that it's right under the "game" 
+  video.size(950, 700); //sets position and size of video so that it's right under the "game" 
+  video.hide();
   
-  targetColor = [255, 175, 27];
   
-  blessBox = {x: 10, y: 1290, w: 50, h: 50};
-  rejectBox = {x: 10, y: 1250, w: 50, h: 50};
+  targetColor = [0, 0, 255];
+  blessBox = {x: 100, y: 1290, w: 100, h: 100};
+  rejectBox = {x: 100, y: 1550, w: 100, h: 100};
   
   initializeInfidels();//sets up infidels
   
   
-  blessButton = createButton('Bless'); //creates button that reads "Bless"
-  blessButton.size(150,80); //button size
-  blessButton.position(36, 558);
-  blessButton.style('background-color', '#00000000'); //sets background of the button to transparent
-  blessButton.style('border', '#000000'); //sets border of the button to transparent
-  blessButton.style('font-family', 'Fondamento'); //sets font to Fondamento
-  blessButton.style('font-size', '40px'); //font size
-  blessButton.style('color', '#DDA75E'); // tan
-  blessButton.show(); //shows button
-  blessButton.mousePressed(blessInfidels); //blesses an infidel when pressed
+//  blessButton = createButton('Bless'); //creates button that reads "Bless"
+//  blessButton.size(150,80); //button size
+//  blessButton.position(36, 558);
+//  blessButton.style('background-color', '#00000000'); //sets background of the button to transparent
+//  blessButton.style('border', '#000000'); //sets border of the button to transparent
+//  blessButton.style('font-family', 'Fondamento'); //sets font to Fondamento
+//  blessButton.style('font-size', '40px'); //font size
+//  blessButton.style('color', '#DDA75E'); // tan
+//  blessButton.show(); //shows button
+//  blessButton.mousePressed(blessInfidels); //blesses an infidel when pressed
   
   
-  rejectButton = createButton('Reject'); //creates button that reads "Reject"
-  rejectButton.size(145, 80); //button size
-  rejectButton.position(38, 765);
-  rejectButton.style('background-color', '#00000000'); //sets background of the button to transparent
-  rejectButton.style('border', '#000000'); //sets border of the button to transparent
-  rejectButton.style('font-family', 'Fondamento'); //sets font to Fondamento
-  rejectButton.style('font-size', '35px'); //font size
-  rejectButton.style('color', '#DDA75E'); //tan
-  rejectButton.show(); //shows button
-  rejectButton.mousePressed(rejectInfidels); //rejects an infidel when pressed
+//  rejectButton = createButton('Reject'); //creates button that reads "Reject"
+//  rejectButton.size(145, 80); //button size
+//  rejectButton.position(38, 765);
+//  rejectButton.style('background-color', '#00000000'); //sets background of the button to transparent
+//  rejectButton.style('border', '#000000'); //sets border of the button to transparent
+//  rejectButton.style('font-family', 'Fondamento'); //sets font to Fondamento
+//  rejectButton.style('font-size', '35px'); //font size
+//  rejectButton.style('color', '#DDA75E'); //tan
+//  rejectButton.show(); //shows button
+//  rejectButton.mousePressed(rejectInfidels); //rejects an infidel when pressed
   
   
   restartButton = createButton('Continue\nPenance?'); //creates button that reads "Continue Penance?"
@@ -147,6 +150,7 @@ function initializeInfidels() {
 function draw() {
   background(255); //sets the color of the background to black
   image(video, 0, 1024); //displays video feed on the canvas
+  noStroke();
   
   
   image(blessed, 0, 0); //displays the main shape cloaked in white
@@ -190,16 +194,66 @@ function draw() {
   text('Sins: \n\n\n\n\nSentencing:', 30, 300); //displayed text  
   textFont('Fondamento'); //sets font for all text
   
+  noFill();
+  stroke(0, 255, 0);
+  strokeWeight(10);
+  ellipse(blessBox.x, blessBox.y, blessBox.w, blessBox.h);
+  stroke(255, 0, 0);
+  ellipse(rejectBox.x, rejectBox.y, rejectBox.w, rejectBox.h);
+  
+  
   checkGameStatus(); //check game status 
   displayProgressBar(); //I'd like to think it's self-explanatory  
+  updatePosition();
+  
+  if (smoothedX >= blessBox.x && blessBoxX <= blessBox.x + blessBox.w && smoothedY <= blessBox.y + blessBox.h){
+    blessInfidel();
+  }
+  
+   if (smoothedX >= rejectBox.x && rejectBoxX <= rejectBox.x + rejectBox.w && smoothedY <= rejectBox.y + rejectBox.h){
+    rejectInfidel();
+  }
 }
 
+
+function updatePosition() {
+  let avgX = 0;
+  let avgY = 0;
+  let count = 0;
+  
+  video.loadPixels();
+  for (let y = 0; y < video.height; y++) {
+    for (let x = 0; x < video.width; x++) {
+      const index = (x + y * video.width) * 4;
+      let r = video.pixels[index + 0];
+      let g = video.pixels[index + 1];
+      let b = video.pixels[index + 2];
+      
+      let d = dist(r, g, b, red(targetColor), green(targetColor), blue(targetColor));
+      
+      if (d < 50) {
+        avgX += x;
+        avgY += y;
+        count++;
+   }
+  }
+ }
+ if (count > 0) {
+ avgX = avgX / count;
+ avgY = avgY / count;
+ 
+ smoothedX += (avgX - smoothedX) * easing;
+ smoothedY += (avgY - smoothedY) * easing;
+ 
+ }
+}
 
 
 
 function displayProgressBar() {
   if (!gameOver) { //displays progress bar conditionally so that it disappears when the game is over
   let progress = map(score, -4, 4, 0, progressBarDiameter, progressBarDiameter); //sets the progress location and the max size of the bar
+  noStroke();
   fill(117, 124, 85); //color of progress bar
   ellipse(1000, 400, progress, progress); //location and size of the progress bar
  }
@@ -344,6 +398,5 @@ function handleInfidelDecision(decision) {
 
 //shit to do:
 
-//  - fix bless/reject to do either action when button is clicked/when hand is raised in the future
 //  - shuffle images of infidels for each individual infidel up for trial
 //  - game glitches when 8 choices are taken when the game is reset like the bitch it is
