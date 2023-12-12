@@ -164,8 +164,8 @@ function draw() {
   //text to explain future controls
   fill(178, 109, 53); //dark tan
   textSize(23); //text size
-  text('Raise Hand', 50, 705); //displays the text "Raise Hand"
-  text('Lower Hand', 50, 908); //displays the text "Lower Hand"
+  text('Click to bless infidel', 20, 705); //displays the text "Raise Hand"
+  text('Click to reject infidel', 20, 908); //displays the text "Lower Hand"
   text(`Decisions: ${decisionsMade}/10`, 918, 580); //displays the amount of decisions left
   
   //displays text for sins (color, size, spacing)
