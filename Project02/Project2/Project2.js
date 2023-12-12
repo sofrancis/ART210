@@ -17,10 +17,6 @@ let winner;
 let loser;
 let blessed;
 
-//buttons to reject or bless
-let blessButton;
-let rejectButton;
-
 let choices; //image that contains the bless and reject buttons
 let rating; //image that contains the progress bar
 
@@ -35,9 +31,23 @@ let targetColor; //array that represents the target color that is being tracked
 let blessBox; //object that represents the initial position/dimensions of a box that "blesses"
 let rejectBox; //object that represents the initial position/dimensions of a box that "blesses"
 
-let smoothedX = 0;
-let smoothedY = 0;
+//makes the width of the box the radius of a circle 
+let blessCircleRadius;
+let rejectCircleRadius;
+
+let smoothedX = 610;
+let smoothedY = 320;
 let easing = 0.05;
+
+//distance to the bless/reject circles
+let distanceToBlessCircle;
+let distanceToRejectCircle;
+
+//selectively show/hide code
+let showVideo = true;
+let isMousePressedEnabled = true;
+
+
 
 
 function preload(){
@@ -62,42 +72,23 @@ function preload(){
 
 
 function setup() {
-  createCanvas(1200, 1744); //creates canvas
-  video = createCapture(VIDEO); //creates video capture
-  video.size(950, 700); //sets position and size of video so that it's right under the "game" 
+  try {
+  createCanvas(1200, 1024); //creates canvas
+  video = createCapture(VIDEO); //creates video capture  
+  video.size(width, height);
+  targetColor = [255, 0, 0];
   video.hide();
   
+  //sets boudaries for the bless/reject areas
+  blessBox = {x: 110, y: 600, w: 230, h: 230}; //dimensions of the blessBox
+  rejectBox = {x: 110, y: 804, w: 230, h: 230}; //dimensions of the rejectBox
   
-  targetColor = [0, 0, 255];
-  blessBox = {x: 100, y: 1290, w: 100, h: 100};
-  rejectBox = {x: 100, y: 1550, w: 100, h: 100};
-  
-  initializeInfidels();//sets up infidels
-  
-  
-//  blessButton = createButton('Bless'); //creates button that reads "Bless"
-//  blessButton.size(150,80); //button size
-//  blessButton.position(36, 558);
-//  blessButton.style('background-color', '#00000000'); //sets background of the button to transparent
-//  blessButton.style('border', '#000000'); //sets border of the button to transparent
-//  blessButton.style('font-family', 'Fondamento'); //sets font to Fondamento
-//  blessButton.style('font-size', '40px'); //font size
-//  blessButton.style('color', '#DDA75E'); // tan
-//  blessButton.show(); //shows button
-//  blessButton.mousePressed(blessInfidels); //blesses an infidel when pressed
+  //uses boundaries set for areas to set radii to make the boxes circles
+  blessCircleRadius = blessBox.w / 2;
+  rejectCircleRadius = rejectBox.w / 2;
   
   
-//  rejectButton = createButton('Reject'); //creates button that reads "Reject"
-//  rejectButton.size(145, 80); //button size
-//  rejectButton.position(38, 765);
-//  rejectButton.style('background-color', '#00000000'); //sets background of the button to transparent
-//  rejectButton.style('border', '#000000'); //sets border of the button to transparent
-//  rejectButton.style('font-family', 'Fondamento'); //sets font to Fondamento
-//  rejectButton.style('font-size', '35px'); //font size
-//  rejectButton.style('color', '#DDA75E'); //tan
-//  rejectButton.show(); //shows button
-//  rejectButton.mousePressed(rejectInfidels); //rejects an infidel when pressed
-  
+  initializeInfidels();//sets up infidels  
   
   restartButton = createButton('Continue\nPenance?'); //creates button that reads "Continue Penance?"
   restartButton.size(145, 80); //button size
@@ -112,28 +103,41 @@ function setup() {
   
   progressBarDiameter = 200; //sets max size of the progress bar to 200 pixels
   currentInfidel = allInfidels.pop();
+  
+  } catch (error) {
+  console.error('Setup Error', error);//sends error message to developer console if code doesn't work
+  }
 }
 
 
 
 
 function reset(){
-  blessButton.show(); //displays bless button
-  rejectButton.show(); //displays reject button
   restartButton.hide(); //hides the reset button
   
-  initializeInfidels(); //sets up infidels again  
   score = 0; //resets score back to zero
   decisionsMade = 0; //resets decisions back to zero
+  initializeInfidels(); //sets up infidels again  
+  
   gameOver = false; //displays progress bar again
   progressBarDiameter = 200; //resets progress bar to "zero"
   currentInfidel = allInfidels.pop(); //resets infidels
   
+  showVideo = true;
+  isMousePressedEnabled = true;
+
   loop(); //begins draw function
+}
+
+function miniReset() {
+  smoothedX = 610;
+  smoothedY = 320;
+  targetColor = [255, 0, 0];
 }
 
 function resetButtonPressed() {
   reset(); //executes the reset function above when the reset button is clicked on
+  miniReset();
 }
 
 
@@ -148,10 +152,9 @@ function initializeInfidels() {
 
 
 function draw() {
+  try {
   background(255); //sets the color of the background to black
-  image(video, 0, 1024); //displays video feed on the canvas
   noStroke();
-  
   
   image(blessed, 0, 0); //displays the main shape cloaked in white
   image(infidelImg[randomInfidelIndex], 400, 475, 500, 550); //displays an image of an infidel
@@ -175,62 +178,91 @@ function draw() {
   text('n', 712, 135.4); //displayed letter
   text('n', 877, 135.4); //displayed letter
   
-  //text to explain future controls
+  //text to explain controls
   fill(178, 109, 53); //dark tan
   textSize(23); //text size
-  text('Raise Hand', 50, 705); //displays the text "Raise Hand"
-  text('Lower Hand', 50, 908); //displays the text "Lower Hand"
+  text('Forgive Infidel', 35, 705); //displays the text "Raise Hand"
+  text('Reject Infidel', 40, 908); //displays the text "Lower Hand"
   text(`Decisions: ${decisionsMade}/10`, 918, 580); //displays the amount of decisions left
+
+  //bottom instruction text controls
+  fill(115, 124, 80); //mild green  
+  textLeading(20);
+  text('Click on a clearly distinguishable\n                                object in view.', 850, 900);
+  text('Move said object to the\n         red or green areas.', 950, 960);
+  
   
   //displays text for sins (color, size, spacing)
   fill(115, 124, 80); //mild green
   textSize(35); //text size
   textLeading(40); //vertical text spacing
   text(`${currentInfidel}`, 50, 350); //displays the current infidel's sins
-  
+
   //white text for sins and sentencing
   fill(255); //white
   textSize(60); //text size
   text('Sins: \n\n\n\n\nSentencing:', 30, 300); //displayed text  
-  textFont('Fondamento'); //sets font for all text
+  textFont('Fondamento'); //sets font for all texy
   
-  noFill();
-  stroke(0, 255, 0);
-  strokeWeight(10);
-  ellipse(blessBox.x, blessBox.y, blessBox.w, blessBox.h);
-  stroke(255, 0, 0);
-  ellipse(rejectBox.x, rejectBox.y, rejectBox.w, rejectBox.h);
+  //"button" areas that activate the bless/reject infidel functions
+  fill(0, 64, 13); //dark green
+  ellipse(blessBox.x, blessBox.y, blessCircleRadius, blessCircleRadius); //bless circle
+  fill(64, 0, 0); //dark red
+  ellipse(rejectBox.x, rejectBox.y, rejectCircleRadius, rejectCircleRadius); //reject circle
   
+    //decision dot
+  fill(255); //white
+  noStroke(); //no stroke
+  ellipse(smoothedX, smoothedY, 20, 20);
   
   checkGameStatus(); //check game status 
   displayProgressBar(); //I'd like to think it's self-explanatory  
-  updatePosition();
+
+  updatePosition(); //updates position
   
-  if (smoothedX >= blessBox.x && blessBoxX <= blessBox.x + blessBox.w && smoothedY <= blessBox.y + blessBox.h){
-    blessInfidel();
+  if (showVideo) {
+  tint(255, 102);
+  image(video, 0, 0, width, height); //display video feed
+  noTint();
   }
   
-   if (smoothedX >= rejectBox.x && rejectBoxX <= rejectBox.x + rejectBox.w && smoothedY <= rejectBox.y + rejectBox.h){
-    rejectInfidel();
+  let distanceToBlessCircle = dist(smoothedX, smoothedY, blessBox.x, blessBox.y);
+  let distanceToRejectCircle = dist(smoothedX, smoothedY, rejectBox.x, rejectBox.y);
+  
+  
+  if (distanceToBlessCircle < blessCircleRadius - 5){ //if the distance of the white circle is five pixels less than the radius of the bless circle, execute the blessInfidels function
+    blessInfidels();
   }
+  
+   if (distanceToRejectCircle < rejectCircleRadius - 5){ //if the distance of the white circle is five pixels less than the radius of the bless circle, execute the rejectInfidels function
+    rejectInfidels();
+  }
+  
+  } catch (error) {
+    console.error('Draw error', error); //sends error message to developer console if code doesn't work
+  }
+  
 }
 
 
 function updatePosition() {
+  try{
+//average position of pixels that match a condition
   let avgX = 0;
   let avgY = 0;
   let count = 0;
   
-  video.loadPixels();
+  video.loadPixels();//loads pixels into frame
   for (let y = 0; y < video.height; y++) {
     for (let x = 0; x < video.width; x++) {
-      const index = (x + y * video.width) * 4;
+      const index = (x + y * video.width) * 4; //calculates the index of the current pixel
+      //rgb values of each pixel
       let r = video.pixels[index + 0];
       let g = video.pixels[index + 1];
       let b = video.pixels[index + 2];
-      
-      let d = dist(r, g, b, red(targetColor), green(targetColor), blue(targetColor));
-      
+      //distance between the selected pixel and the target color
+      let d = dist(r, g, b, red(targetColor[0]), green(targetColor[1]), blue(targetColor[2]));
+      //if pixel is below a certain threshold
       if (d < 50) {
         avgX += x;
         avgY += y;
@@ -238,15 +270,38 @@ function updatePosition() {
    }
   }
  }
- if (count > 0) {
- avgX = avgX / count;
- avgY = avgY / count;
- 
- smoothedX += (avgX - smoothedX) * easing;
- smoothedY += (avgY - smoothedY) * easing;
- 
- }
+  video.updatePixels();
+  //if pixels matching target value are found, updates the smoothedX and smoothedY to their average value
+  if (count > 0) {
+  avgX = avgX / count;
+  avgY = avgY / count;
+  smoothedX += (avgX - smoothedX) * easing;
+  smoothedY += (avgY - smoothedY) * easing; 
+  }
+ } catch (error) {
+  console.error ('Capture pixels error: ', error); //check for error in the pixel tracking choice
 }
+}
+
+
+
+//now this function is special because i've spent 11 nope 12 hours now on it and the frame rate slows everything down to the point where it takes a whole five minutes to even test things and i want a warm cider and maybe a chair to the head
+function mousePressed() {
+  try {
+  if (isMousePressedEnabled) {
+    // Check if the mouse click is outside the area where color tracking should be disabled
+    if (!(mouseX >= 145 && mouseX <= 1045 && mouseY >= 80 && mouseY <= 480)) {
+      // Get the color of the pixel at the mouse position
+      let c = video.get(mouseX, mouseY);
+      targetColor = [red(c), green(c), blue(c)]; // Set the new target color
+      console.log('Color Values: ', red(c), green(c), blue(c)); // log the RGB values of whatever was clicked on
+    }
+   } 
+  } catch (error) {
+  console.error ('Tracking/press issue', error); //check for error in the selective color tracking function
+ } 
+}
+
 
 
 
@@ -262,7 +317,7 @@ function displayProgressBar() {
 
 
 
-  function updateScore(decision, character) {
+function updateScore(decision, character) {
   let correctDecision = (goodie.includes(character) && decision) || (baddie.includes(character) && !decision);
   score += correctDecision ? 1 : -1;
   score = constrain(score, -4, 4); // Keep score within -4 to 4
@@ -270,12 +325,13 @@ function displayProgressBar() {
 
 
 
-
+//multiple endings for game
 function checkGameStatus() { //WE HAVE A WINNER
   if (score >= 4) {
     image(winner, 0, 0); //displays "winning" image
     
     //sentencing for ending
+    noStroke();
     fill(255, 0, 0);
     textSize(140);
     text('Canonization', 200, 140);
@@ -289,12 +345,12 @@ function checkGameStatus() { //WE HAVE A WINNER
     fill(169, 112, 64); //dark tan
     textSize(23); //text size
     text('Click on "Penance"', 930, 590); //displays text "Click on 'Penance'"
-    
-    blessButton.hide(); //hide bless button
-    rejectButton.hide(); //hide reject button
+
     restartButton.show(); //show restart button
     
     gameOver = true; //hides progress bar
+    showVideo = false;
+    isMousePressedEnabled = false;
     
     noLoop(); //stops drawing function
     
@@ -317,13 +373,13 @@ function checkGameStatus() { //WE HAVE A WINNER
     fill(169, 112, 64); //dark tan
     textSize(23); //text size
     text('Click on "Penance"', 930, 590); //displays text "Click on 'Penance'"
-    
-    blessButton.hide();  //hide bless button
-    rejectButton.hide(); //hide reject button
+
     restartButton.show(); //show restart button
     
     gameOver = true; //hides progress bar
-    
+    showVideo = false;
+    isMousePressedEnabled = false;
+        
     noLoop(); //stops drawing function
     
     
@@ -345,12 +401,12 @@ function checkGameStatus() { //WE HAVE A WINNER
     fill(169, 112, 64); //dark tan
     textSize(23); //text size
     text('Click on "Penance"', 930, 590); //displays text "Click on 'Penance'"
-    
-    blessButton.hide();  //hide bless button
-    rejectButton.hide(); //hide reject button
+
     restartButton.show(); //show restart button
     
     gameOver = true; //hides progress bar
+    showVideo = false;
+    isMousePressedEnabled = false;
     
     noLoop(); //stops drawing function
   }
@@ -373,17 +429,12 @@ function shuffle(array) {
 
 function blessInfidels() {
   handleInfidelDecision(true);
+  miniReset();
 }
-
-
-
- 
 function rejectInfidels() {
   handleInfidelDecision(false);
+  miniReset();
 }
-
-
-
 
 function handleInfidelDecision(decision) {
   if (allInfidels.length === 0) {
@@ -393,10 +444,3 @@ function handleInfidelDecision(decision) {
   currentInfidel = allInfidels.pop();
   decisionsMade++;
 }
-
-
-
-//shit to do:
-
-//  - shuffle images of infidels for each individual infidel up for trial
-//  - game glitches when 8 choices are taken when the game is reset like the bitch it is
